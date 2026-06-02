@@ -1,0 +1,8 @@
+.related-field.no-view-selection .results-container {
+    padding-top: 3px;
+}
+
+.related-field.no-view-selection .row-fluid:first-child {
+    margin-top:4px;
+    display: none;
+}
