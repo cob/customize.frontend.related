@@ -24,7 +24,7 @@ cob.custom.customize.push(function (core, utils, ui) {
                     "<div class=\"js-references-new-wrapper references-new-wrapper\">\n" +
                     "</div>"
 
-                if (!confs.args || confs.args.length <= 2) {
+                if (!confs.args || confs.args.length <= 1) {
                     fieldPHtml.querySelector(".grid-results").innerHTML = "<p class='text-error'>Error parsing arguments of field</h4>";
                     return
                 }
