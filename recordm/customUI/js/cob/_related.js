@@ -30,9 +30,10 @@ cob.custom.customize.push(function (core, utils, ui) {
                 }
 
                 const definition = confs.args[0]
+                const unparsedQuery = confs.args[1]
 
-                const queryFields = getFields(confs.args[1]);
-                const query = buildQuery(confs.args[1], queryFields, presenter)
+                const queryFields = getFields(unparsedQuery);
+                const query = buildQuery(unparsedQuery, queryFields, presenter, instance.data.id)
                 const opts = buildOpts(confs.args[2] || "")
 
                 const simpleSearch = new cob.components.SimpleSearch(core, `#f${instanceField.id}`, definition, query, {
@@ -50,10 +51,14 @@ cob.custom.customize.push(function (core, utils, ui) {
                 fieldPHtml.querySelector(".js-references-refresh-btn")
                     .addEventListener("click", simpleSearch.refresh)
 
+                const updateResultsDebounce = debounce(() => {
+                    const newQuery = buildQuery(unparsedQuery, queryFields, presenter, instance.data.id)
+                    simpleSearch.setSearchValue(newQuery)
+                });
+
                 queryFields.forEach(fieldName => {
                     presenter.onFieldChange(fieldName, () => {
-                        const newQuery = buildQuery(confs.args[1], queryFields, presenter)
-                        simpleSearch.setSearchValue(newQuery)
+                        updateResultsDebounce();
                     })
                 })
 
@@ -68,19 +73,21 @@ cob.custom.customize.push(function (core, utils, ui) {
         return [...query.matchAll(/__(.+?)__/g)].map(m => m[1]);
     }
 
-    function buildQuery(query, queryFields, presenter,) {
+    function buildQuery(query, queryFields, presenter, instanceId) {
         if (queryFields.length === 0) return query;
 
-        const fieldValueMap = {}
+        const fieldValueMap = {
+          id: `"${instanceId}"`,
+        }
 
         queryFields.forEach(f => {
             const matching = presenter.findFieldPs(fp => queryFields.includes(fp.getField().fieldDefinition.name))
             if (matching.length) {
-                fieldValueMap[f] = matching[0].getValue()
+              fieldValueMap[f.toLowerCase()] = matching[0].getValue()
             }
         })
 
-        return query.replace(/__(.+?)__/g, (_, key) => fieldValueMap[key] ?? "*");
+        return query.replace(/__(.+?)__/g, (_, key) => fieldValueMap[key.toLowerCase()] ?? "*");
     }
 
     function buildOpts(opts) {
@@ -117,6 +124,16 @@ cob.custom.customize.push(function (core, utils, ui) {
         // noinspection UnnecessaryLocalVariableJS
         const value = fieldPHtml.querySelector(".results-container .js-total-records").textContent
         fieldPHtml.querySelector(".references-legend .js-total-records").textContent = value
+    }
+
+    function debounce(func, timeout = 300) {
+        let timer;
+        return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+              func.apply(this, args);
+            }, timeout);
+        };
     }
 
 });
