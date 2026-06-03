@@ -1,3 +1,7 @@
+.related-field > .references-wrapper .grid-results > .references-list > .js-def-search-result-container > .row-fluid > .js-total-records-container {
+    display: none;
+}
+
 .related-field.no-view-selection .results-container {
     padding-top: 3px;
 }

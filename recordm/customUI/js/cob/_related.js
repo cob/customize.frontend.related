@@ -81,13 +81,18 @@ cob.custom.customize.push(function (core, utils, ui) {
         }
 
         queryFields.forEach(f => {
+            if (f.toLowerCase() === "id") return
+
             const matching = presenter.findFieldPs(fp => queryFields.includes(fp.getField().fieldDefinition.name))
             if (matching.length) {
-              fieldValueMap[f.toLowerCase()] = matching[0].getValue()
+              fieldValueMap[f] = matching[0].getValue()
             }
         })
 
-        return query.replace(/__(.+?)__/g, (_, key) => fieldValueMap[key.toLowerCase()] ?? "*");
+        return query.replace(/__(.+?)__/g, (_, key) => {
+            if (key.toLowerCase() === "id") return fieldValueMap["id"] ?? "*";
+            return fieldValueMap[key] ?? "*";
+        });
     }
 
     function buildOpts(opts) {
